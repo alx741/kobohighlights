@@ -3,9 +3,13 @@
 module Main where
 
 import           Control.Monad.IO.Class (MonadIO, liftIO)
+import qualified Data.HashMap.Strict    as HM
 import           Data.IORef
+import           Data.Maybe             (fromJust)
 import           Data.Text
 import qualified Data.Text.IO           as TIO (readFile)
+import qualified Data.ByteString        as BS  (readFile)
+import           System.Directory       (doesFileExist, copyFile)
 import           Web.Spock
 import           Web.Spock.Config
 
@@ -35,12 +39,17 @@ data TargetFormat
     deriving (Show, Read, Eq)
 
 
-generateHandler ::  MonadIO m => ActionCtxT ctx m a
+generateHandler :: MonadIO m => ActionCtxT ctx m a
 generateHandler = do
-    params  <- paramsPost
+    params <- paramsPost
     liftIO $ print params
 
-    fs <- files
-    liftIO $ print fs
+    dbFile <- HM.lookup "dbFile" <$> files
+    liftIO $ print dbFile
+
+    -- dat2 <- liftIO $ BS.readFile (uf_tempLocation $ fromJust dbFile)
+    -- liftIO $ print dat2
+
+    liftIO $ copyFile (uf_tempLocation $ fromJust dbFile) "/home/alx/testfile"
 
     file "placeholder File" "./kobohighlights.cabal"

@@ -31,6 +31,9 @@ executable kobohighlights
     -- other-extensions:
     build-depends:    base ^>=4.14.2.0
                     , text
+                    , unordered-containers
+                    , bytestring
+                    , directory
                     , Spock
                     , reroute
     hs-source-dirs:   app
