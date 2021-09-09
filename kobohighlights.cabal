@@ -34,6 +34,8 @@ executable kobohighlights
                     , unordered-containers
                     , bytestring
                     , directory
+                    , filepath
+                    , process
                     , Spock
                     , reroute
     hs-source-dirs:   app
