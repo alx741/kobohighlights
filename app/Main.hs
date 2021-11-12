@@ -64,17 +64,26 @@ generateHandler = do
     liftIO $ copyFile (uf_tempLocation $ fromJust dbFile) $ tmpDir <> "/testfile"
 
     case (lookup "targetFormat" params) of
-        Nothing      -> setStatus badRequest400
-        Just "EBOOK" -> (liftIO $ generateFinal EBOOK $ tmpDir <> "/testfile") >>= (\x -> liftIO $ print x)
-        Just "HTML"  -> (liftIO $ generateFinal HTML  $ tmpDir <> "/testfile") >>= (\x -> liftIO $ print x)
-        Just "PDF"   -> (liftIO $ generateFinal PDF   $ tmpDir <> "/testfile") >>= (\x -> liftIO $ print x)
-        Just _       -> setStatus badRequest400
+        Just targetFormat -> do
+            generation <- liftIO $ generate (read $ unpack targetFormat) $ tmpDir <> "/testfile"
+            case generation of
+                Left e -> error e
+                Right outputFile -> file "something" outputFile
+        Nothing -> setStatus badRequest400
+        -- Just "EBOOK" -> (liftIO $ generateFinal EBOOK $ tmpDir <> "/testfile") >>= (\x -> liftIO $ print x)
+        -- Just "HTML"  -> (liftIO $ generateFinal HTML  $ tmpDir <> "/testfile") >>= (\x -> liftIO $ print x)
+        -- Just "PDF"   -> (liftIO $ generateFinal PDF   $ tmpDir <> "/testfile") >>= (\x -> liftIO $ print x)
+        -- Just _       -> setStatus badRequest400
 
-    file "placeholder File" "./kobohighlights.cabal"
+    -- file "placeholder File" "./kobohighlights.cabal"
 
 
-generate :: TargetFormat -> FilePath -> IO
-generate tf inputFile = undefined
+generate :: TargetFormat -> FilePath -> IO (Either String FilePath)
+generate tf inputFile = do
+    eitherMarkdown <- generateMarkdown inputFile
+    case eitherMarkdown of
+        Right markdownFile -> generateFinal tf markdownFile
+        Left e -> error e
 
 generateFinal :: TargetFormat -> FilePath -> IO (Either String FilePath)
 generateFinal EBOOK inputFile = performConvertion ebookParams inputFile $ replaceExtensions inputFile "epub"
